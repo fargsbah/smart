@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تطبيق الدفتر الحسابي الذكي</title>
+    <style>
+        :root {
+            --primary-color: #1e293b;
+            --secondary-color: #3b82f6;
+            --accent-color: #10b981;
+            --danger-color: #ef4444;
+            --whatsapp-color: #25D366;
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 15px;
+            color: #334155;
+        }
+        .container {
+            max-width: 650px;
+            margin: auto;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+        h2, h3 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-top: 0;
+        }
+        /* الشاشات والتبديل بينها */
+        .view-section {
+            display: none;
+        }
+        .view-section.active {
+            display: block;
+        }
+        /* تصميم الأزرار الرئيسية في القائمة */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .menu-btn {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 20px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: 0.2s;
+        }
+        .menu-btn:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+        .menu-btn.add { background-color: var(--accent-color); }
+        .menu-btn.delete { background-color: var(--danger-color); }
+        .menu-btn.whatsapp { background-color: var(--whatsapp-color); grid-column: span 2; }
+
+        /* أزرار الرجوع والتنقل */
+        .back-btn {
+            background-color: #64748b;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        /* النماذج والحقول */
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        .row {
+            display: flex;
+            gap: 10px;
+        }
+        .row .form-group {
+            flex: 1;
+        }
+        .action-btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        /* الكاميرا */
+        .camera-section {
+            margin-top: 15px;
+            text-align: center;
+            border: 2px dashed #cbd5e1;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        video, img {
+            width: 100%;
+            max-height: 180px;
+            object-fit: cover;
+            border-radius: 6px;
+            display: none;
+            margin-top: 10px;
+        }
+
+        /* الجداول والبطاقات */
+        table {
+            width: 100%;
+            margin-top: 15px;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        th, td {
+            border: 1px solid #e2e8f0;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        .summary-box {
+            background: #e0f2fe;
+            color: #0369a1;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- 1. الشاشة الرئيسية (القائمة) -->
+    <div id="homeView" class="view-section active">
+        <h2>📖 الدفتر الحسابي الذكي</h2>
+        <p style="text-align: center; color: #64748b;">إدارة حساباتك، مبيعاتك، وديونك بكل ذكاء وسهولة</p>
+        
+        <div class="menu-grid">
+            <button class="menu-btn add" onclick="switchView('addView')">➕ إضافة حساب جديد</button>
+            <button class="menu-btn" onclick="switchView('reviewView')">📋 مراجعة الحسابات</button>
+            <button class="menu-btn" onclick="switchView('editView')" style="background-color: #f59e0b;">✏️ تعديل حساب</button>
+            <button class="menu-btn delete" onclick="switchView('deleteView')">🗑️ حذف حساب</button>
+            <button class="menu-btn whatsapp" onclick="switchView('whatsappView')">💬 إرسال الحساب (واتساب)</button>
+        </div>
+    </div>
+
+    <!-- 2. واجهة إضافة حساب -->
+    <div id="addView" class="view-section">
+        <button class="back-btn" onclick="switchView('homeView')">⬅ العودة للقائمة</button>
+        <h2>إضافة عملية / حساب جديد</h2>
+        <form id="ledgerForm">
+            <div class="row">
+                <div class="form-group">
+                    <label>اسم الزبون:</label>
+                    <input type="text" id="customerName" required placeholder="اسم المشتري...">
+                </div>
+                <div class="form-group">
+                    <label>رقم الواتساب:</label>
+                    <input type="tel" id="customerPhone" placeholder="96777xxxxxxx">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="form-group">
+                    <label>نوع البضاعة (مثلاً قات):</label>
+                    <input type="text" id="itemType" required placeholder="نوع القات أو البضاعة">
+                </div>
+                <div class="form-group">
+                    <label>الكمية (بالكيلو):</label>
+                    <input type="number" step="0.1" id="quantity" required placeholder="0.0">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>سعر الكيلو (ريال):</label>
+                <input type="number" id="pricePerKilo" required placeholder="السعر...">
+            </div>
+
+            <div class="camera-section">
+                <label>📷 تصوير البضاعة (للتقدير الذكي):</label>
+                <button type="button" id="openCamera" class="back-btn" style="background-color: #334155; width:100%;">تشغيل الكاميرا</button>
+                <video id="video" autoplay playsinline></video>
+                <button type="button" id="captureBtn" class="back-btn" style="background-color: #ea580c; display:none; width:100%; margin-top:5px;">التقاط الصورة</button>
+                <canvas id="canvas" style="display:none;"></canvas>
+                <img id="snapshot" alt="صورة البضاعة">
+            </div>
+
+            <button type="submit" class="action-btn">حفظ العملية في الدفتر</button>
+        </form>
+    </div>
+
+    <!-- 3. واجهة مراجعة الحسابات -->
+    <div id="reviewView" class="view-section">
+        <button class="back-btn" onclick="switchView('homeView')">⬅ العودة للقائمة</button>
+        <h2>📋 سجل الحسابات واليومية</h2>
+        <div class="summary-box" id="totalSummaryText">إجمالي المبيعات: 0 ريال</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>التاريخ</th>
+                    <th>الزبون</th>
+                    <th>البضاعة</th>
+                    <th>الكمية</th>
+                    <th>الإجمالي</th>
+                </tr>
+            </thead>
+            <tbody id="reviewTableBody"></tbody>
+        </table>
+    </div>
+
+    <!-- 4. واجهة تعديل حساب -->
+    <div id="editView" class="view-section">
+        <button class="back-btn" onclick="switchView('homeView')">⬅ العودة للقائمة</button>
+        <h2>✏️ تعديل حساب سابق</h2>
+        <div class="form-group">
+            <label>اختر العملية المراد تعديلها:</label>
+            <select id="editSelect" onchange="loadTransactionDataForEdit()">
+                <option value="">-- اختر من السجل --</option>
+            </select>
+        </div>
+        <form id="editForm" style="display:none;">
+            <input type="hidden" id="editId">
+            <div class="form-group">
+                <label>اسم الزبون:</label>
+                <input type="text" id="editCustomer" required>
+            </div>
+            <div class="form-group">
+                <label>نوع البضاعة:</label>
+                <input type="text" id="editItem" required>
+            </div>
+            <div class="row">
+                <div class="form-group">
+                    <label>الكمية:</label>
+                    <input type="number" step="0.1" id="editQty" required>
+                </div>
+                <div class="form-group">
+                    <label>سعر الكيلو:</label>
+                    <input type="number" id="editPrice" required>
+                </div>
+            </div>
+            <button type="submit" class="action-btn" style="background-color: #f59e0b;">حفظ التعديلات</button>
+        </form>
+    </div>
+
+    <!-- 5. واجهة حذف حساب -->
+    <div id="deleteView" class="view-section">
+        <button class="back-btn" onclick="switchView('homeView')">⬅ العودة للقائمة</button>
+        <h2>🗑️ حذف حساب أو معاملة</h2>
+        <div class="form-group">
+            <label>اختر الحساب المراد حذفه:</label>
+            <select id="deleteSelect">
+                <option value="">-- اختر من السجل --</option>
+            </select>
+        </div>
+        <button type="button" class="action-btn" style="background-color: var(--danger-color);" onclick="confirmDelete()">حذف الحساب المحدد</button>
+    </div>
+
+    <!-- 6. واجهة إرسال الحساب عبر الواتساب -->
+    <div id="whatsappView" class="view-section">
+        <button class="back-btn" onclick="switchView('homeView')">⬅ العودة للقائمة</button>
+        <h2>💬 إرسال الحساب للعميل</h2>
+        <div class="form-group">
+            <label>اختر العميل:</label>
+            <select id="whatsappSelect">
+                <option value="">-- اختر العميل --</option>
+            </select>
+        </div>
+        <button type="button" class="action-btn" style="background-color: var(--whatsapp-color);" onclick="sendWhatsApp()">إرسال البيان عبر الواتساب</button>
+    </div>
+
+</div>
+
+<script>
+    // التنقل بين الواجهات
+    function switchView(viewId) {
+        document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+        document.getElementById(viewId).classList.add('active');
+        if(viewId === 'reviewView') loadReviewTable();
+        if(viewId === 'editView') populateDropdowns('editSelect');
+        if(viewId === 'deleteView') populateDropdowns('deleteSelect');
+        if(viewId === 'whatsappView') populateDropdowns('whatsappSelect');
+    }
+
+    // إدارة الكاميرا
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const snapshot = document.getElementById('snapshot');
+    const openCameraBtn = document.getElementById('openCamera');
+    const captureBtn = document.getElementById('captureBtn');
+    let capturedImageURL = "";
+
+    openCameraBtn.addEventListener('click', async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+            video.srcObject = stream;
+            video.style.display = 'block';
+            captureBtn.style.display = 'block';
+            openCameraBtn.style.display = 'none';
+        } catch (err) {
+            alert('تعذر فتح الكاميرا.');
+        }
+    });
+
+    captureBtn.addEventListener('click', () => {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        capturedImageURL = canvas.toDataURL('image/png');
+        snapshot.src = capturedImageURL;
+        snapshot.style.display = 'block';
+
+        const stream = video.srcObject;
+        if(stream) stream.getTracks().forEach(track => track.stop());
+        video.style.display = 'none';
+        captureBtn.style.display = 'none';
+        openCameraBtn.style.display = 'block';
+        openCameraBtn.innerText = "إعادة التقاط الصورة";
+    });
+
+    // إضافة عملية جديدة
+    document.getElementById('ledgerForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const customer = document.getElementById('customerName').value;
+        const phone = document.getElementById('customerPhone').value;
+        const item = document.getElementById('itemType').value;
+        const qty = parseFloat(document.getElementById('quantity').value);
+        const price = parseFloat(document.getElementById('pricePerKilo').value);
+        const total = qty * price;
+        const dateStr = new Date().toLocaleDateString('ar-YE');
+
+        const transaction = {
+            id: Date.now(),
+            date: dateStr,
+            customer,
+            phone,
+            item,
+            qty,
+            price,
+            total,
+            image: capturedImageURL
+        };
+
+        let transactions = JSON.parse(localStorage.getItem('ledger')) || [];
+        transactions.push(transaction);
+        localStorage.setItem('ledger', JSON.stringify(transactions));
+
+        alert('تم حفظ الحساب بنجاح!');
+        this.reset();
+        snapshot.style.display = 'none';
+        capturedImageURL = "";
+        openCameraBtn.innerText = "تشغيل الكاميرا";
+        switchView('homeView');
+    });
+
+    // جدول المراجعة
+    function loadReviewTable() {
+        let transactions = JSON.parse(localStorage.getItem('ledger')) || [];
+        const tbody = document.getElementById('reviewTableBody');
+        tbody.innerHTML = '';
+        let grandTotal = 0;
+
+        transactions.forEach(tx => {
+            grandTotal += tx.total;
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${tx.date}</td>
+                <td>${tx.customer}</td>
+                <td>${tx.item}</td>
+                <td>${tx.qty} كجم</td>
+                <td>${tx.total} ريال</td>
+            `;
+            tbody.appendChild(row);
+        });
+        document.getElementById('totalSummaryText').innerText = `إجمالي المبيعات المسجلة: ${grandTotal} ريال`;
+    }
+
+    // تعبئة القوائم المنسدلة
+    function populateDropdowns(selectId) {
+        let transactions = JSON.parse(localStorage.getItem('ledger')) || [];
+        const select = document.getElementById(selectId);
+        select.innerHTML = '<option value="">-- اختر الحساب --</option>';
+        transactions.forEach(tx => {
+            const option = document.createElement('option');
+            option.value = tx.id;
+            option.textContent = `${tx.customer} - ${tx.item} (${tx.total} ريال) [${tx.date}]`;
+            select.appendChild(option);
+        });
+    }
+
+    // تحميل بيانات التعديل
+    function loadTransactionDataForEdit() {
+        const id = document.getElementById('editSelect').value;
+        if(!id) {
+            document.getElementById('editForm').style.display = 'none';
+            return;
+        }
+        let transactions = JSON.parse(localStorage.getItem('ledger')) || [];
+        const tx = transactions.find(t => t.id == id);
+        if(tx) {
+            document.getElementById('editId').value = tx.id;
+            document.getElementById('editCustomer').value = tx.customer;
+            document.getElementById('editItem').value = tx.item;
+            document.getElementById('editQty').value = tx.qty;
+            document.getElementById('editPrice').value = tx.price;
+            document.getElementById('editForm').style.display = 'block';
+        }
+    }
+
+    // حفظ التعديلات
+    document.getElementById('editForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const id = document.getElementById('editId').value;
+        let transactions = JSON.parse(localStorage.getItem('ledger')) || [];
+        let tx = transactions.find(t => t.id == id);
+        if(tx) {
+            tx.customer = document.getElementById('editCustomer').value;
+            tx.item = document.getElementById('editItem').value;
+            tx.qty = parseFloat(document.getElementById('editQty').value);
+            tx.price = parseFloat(document.getElementById('editPrice').value);
+            tx.total = tx.qty * tx.price;
+            localStorage.setItem('ledger', JSON.stringify(transactions));
+            alert('تم تعديل الحساب بنجاح!');
+            switchView('homeView');
+        }
+    });
+
+    // حذف الحساب المحدد
+    function confirmDelete() {
+        const id = document.getElementById('deleteSelect').value;
+        if(!id) {
+            alert('الرجاء اختيار الحساب المراد حذفه أولاً.');
+            return;
+        }
+        if(confirm('هل أنت متأكد من حذف هذا الحساب نهائياً؟')) {
+            let transactions = JSON.parse(localStorage.getItem('ledger')) || [];
+            transactions = transactions.filter(t => t.id != id);
+            localStorage.setItem('ledger', JSON.stringify(transactions));
+            alert('تم حذف الحساب بنجاح.');
+            switchView('homeView');
+        }
+    }
+
+    // إرسال الواتساب
+    function sendWhatsApp() {
+        const id = document.getElementById('whatsappSelect').value;
+        if(!id) {
+            alert('الرجاء اختيار العميل أولاً.');
+            return;
+        }
+        let transactions = JSON.parse(localStorage.getItem('ledger')) || [];
+        const tx = transactions.find(t => t.id == id);
+        if(tx) {
+            const message = encodeURIComponent(`مرحباً أ/ ${tx.customer}،\nإليك بيان حسابك:\n📅 التاريخ: ${tx.date}\n📦 البضاعة: ${tx.item}\n⚖️ الكمية: ${tx.qty} كجم\n💰 الإجمالي: ${tx.total} ريال\nشكراً لتعاملك معنا!`);
+            const url = tx.phone ? `https://wa.me/${tx.phone}?text=${message}` : `https://wa.me/?text=${message}`;
+            window.open(url, '_blank');
+        }
+    }
+</script>
+
+</body>
+</html>
